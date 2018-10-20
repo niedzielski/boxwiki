@@ -1,0 +1,118 @@
+version: '3'
+
+services:
+  boxwiki:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - mysql
+    ports:
+      - "8181:80"
+    volumes:
+      - ./core:/var/www/html
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+    depends_on:
+      - mysql
+    networks:
+      default:
+        aliases:
+          - boxwiki.svc
+    environment:
+      - DB_SERVER=mysql.svc:3306
+      - MW_ADMIN_NAME=admin
+      - MW_ADMIN_PASS=adminpass
+      - MW_WG_SECRET_KEY=secretkey
+      - DB_USER=wikiuser
+      - DB_PASS=sqlpass
+      - DB_NAME=boxwiki
+      - MW_SITE_NAME=box
+      - MW_SITE_LANG=en
+  mysql:
+    image: mariadb:10.3
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_DATABASE: 'boxwiki'
+      MYSQL_USER: 'wikiuser'
+      MYSQL_PASSWORD: 'sqlpass'
+    networks:
+      default:
+        aliases:
+          - mysql.svc
+  wdqs-frontend:
+    image: wikibase/wdqs-frontend:latest
+    ports:
+      - "8282:80"
+    depends_on:
+      - wdqs-proxy
+    networks:
+      default:
+        aliases:
+          - wdqs-frontend.svc
+    environment:
+      - WIKIBASE_HOST=boxwiki.svc
+      - WDQS_HOST=wdqs-proxy.svc
+  wdqs:
+    image: wikibase/wdqs:0.3.1
+    volumes:
+      - ./wdqs:/wdqs/data
+    command: /runBlazegraph.sh
+    networks:
+      default:
+        aliases:
+          - wdqs.svc
+    environment:
+      - WIKIBASE_HOST=boxwiki.svc
+      - WDQS_HOST=wdqs.svc
+      - WDQS_PORT=9999
+    expose:
+      - 9999
+  wdqs-proxy:
+    image: wikibase/wdqs-proxy:latest
+    environment:
+      - PROXY_PASS_HOST=wdqs.svc:9999
+    ports:
+      - "8989:80"
+    depends_on:
+      - wdqs
+    networks:
+      default:
+        aliases:
+          - wdqs-proxy.svc
+  wdqs-updater:
+    image: wikibase/wdqs:0.3.1
+    command: /runUpdate.sh
+    depends_on:
+      - wdqs
+      - boxwiki
+    networks:
+      default:
+        aliases:
+          - wdqs-updater.svc
+    environment:
+      - WIKIBASE_HOST=boxwiki.svc
+      - WDQS_HOST=wdqs.svc
+      - WDQS_PORT=9999
+  quickstatements:
+    image: wikibase/quickstatements:latest
+    ports:
+      - "9191:80"
+    depends_on:
+      - boxwiki
+    networks:
+      default:
+        aliases:
+         - quickstatements.svc
+    environment:
+      - OAUTH_CONSUMER_KEY=559fcf1da153c5ec4b2fbefa7c3c395b
+      - OAUTH_CONSUMER_SECRET=57cad33da0015dce1e94a597908e19848714a6af
+      - QS_PUBLIC_SCHEME_HOST_AND_PORT=http://localhost:9191
+      - WB_PUBLIC_SCHEME_HOST_AND_PORT=http://localhost:8181
+      - WIKIBASE_SCHEME_AND_HOST=http://boxwiki.svc
+      - WB_PROPERTY_NAMESPACE=122
+      - "WB_PROPERTY_PREFIX=Property:"
+      - WB_ITEM_NAMESPACE=120
+      - "WB_ITEM_PREFIX=Item:"
