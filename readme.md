@@ -74,6 +74,7 @@ docker rm -v $(docker ps -aq --filter name=boxwiki)
 time for i in . extensions/*/ skins/*/; do
   git -C "$i" pull
   composer -d"$i" install
+  composer -d"$i" update
   npm -C "$i" i
 done
 ```
@@ -81,12 +82,18 @@ done
 ## Log into the box
 ```bash
 docker exec -it boxwiki_boxwiki_1 bash
+su stephen
 ```
 
 ### Import kittens from Wikidata
 ```bash
 php extensions/WikibaseImport/maintenance/importEntities.php --entity Q147
 php maintenance/update.php --quick
+```
+
+### Run PHPUnit tests
+```bash
+time php tests/phpunit/phpunit.php --filter PageSplitTesterTest
 ```
 
 ### Add an image
