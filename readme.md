@@ -29,6 +29,7 @@ $repo_base/extensions/QuickSurveys
 $repo_base/extensions/RelatedArticles
 $repo_base/extensions/Wikibase
 $repo_base/extensions/WikimediaEvents
+$repo_base/extensions/WikimediaMessages
 https://github.com/filbertkm/WikibaseImport
 eof
 
@@ -198,6 +199,8 @@ wfLoadExtension('WikibaseImport');
 wfLoadExtension('WikimediaEvents');
 $wgWMEReadingDepthEnabled = true;
 $wgWMEReadingDepthSamplingRate = 1;
+
+wfLoadExtension('WikimediaMessages');
 
 $wgMinervaDownloadIcon = true;
 $wgMinervaApplyKnownTemplateHacks = true;
