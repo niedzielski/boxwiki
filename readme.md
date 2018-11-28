@@ -153,6 +153,8 @@ $wgShowSQLErrors = true;
 
 $wgEnableUploads = true;
 
+$wgEnableJavaScriptTest = true;
+
 $wgEventLoggingBaseUri = '/event.gif';
 $wgEventLoggingFile = '/var/log/mediawiki/events.log';
 wfLoadExtension('EventLogging');
