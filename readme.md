@@ -88,8 +88,8 @@ su stephen
 
 ### Import kittens from Wikidata
 ```bash
-php extensions/WikibaseImport/maintenance/importEntities.php --entity Q147
-php maintenance/update.php --quick
+docker exec -it boxwiki_boxwiki_1 php extensions/WikibaseImport/maintenance/importEntities.php --entity Q147
+docker exec -it boxwiki_boxwiki_1 php maintenance/update.php --quick
 ```
 
 ### Run PHPUnit tests
@@ -99,8 +99,8 @@ time php tests/phpunit/phpunit.php --filter PageSplitTesterTest
 
 ### Add an image
 ```bash
-php maintenance/importImages.php images
-php maintenance/edit.php kitten <<< '[[File:Kitten.jpg]]'
+docker exec -it boxwiki_boxwiki_1 php maintenance/importImages.php images
+docker exec -it boxwiki_boxwiki_1 bash -c "php maintenance/edit.php kitten <<< '[[File:Kitten.jpg]]'"
 ```
 
 ## Tested LocalSettingsDev.php
