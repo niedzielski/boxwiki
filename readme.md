@@ -166,8 +166,16 @@ $wgMFContentProviderClass = 'MobileFrontend\ContentProviders\MwApiContentProvide
 $wgMFEnableBeta = true;
 $wgMFEnableMobilePreferences = true;
 $wgMFLazyLoadImages = [ 'base' => true, 'beta' => true ];
+$wgMFNearby = true;
 $wgMFNearbyEndpoint = 'https://en.wikipedia.org/w/api.php';
 $wgMFMwApiContentProviderBaseUri = 'https://en.wikipedia.org/w/api.php';
+$wgMFUseWikibase = true;
+$wgMFDisplayWikibaseDescriptions = [
+  'search' => true,
+  'nearby' => true,
+  'watchlist' => true,
+  'tagline' => true,
+];
 wfLoadExtension('MobileFrontend');
 
 wfLoadExtension('OAuth');
@@ -194,6 +202,8 @@ require_once "$IP/extensions/Wikibase/client/ExampleSettings.php";
 $wgEnableWikibaseRepo = true;
 $wgEnableWikibaseClient = true;
 $wgWBClientSettings['pageSchemaNamespaces'] = [0, 6, 120];
+$wgWBClientSettings['pageSchemaSplitTestSamplingRatio'] = .5;
+$wgWBClientSettings['pageSchemaSplitTestBuckets'] = ['control', 'treatment'];
 $wgWBClientSettings['siteGlobalID'] = 'enwiki';
 
 wfLoadExtension('WikibaseImport');
@@ -208,6 +218,8 @@ $wgMinervaDownloadIcon = true;
 $wgMinervaApplyKnownTemplateHacks = true;
 $wgMinervaABSamplingRate = 1;
 $wgMinervaErrorLogSamplingRate = 1;
+$wgMinervaFeatures = ['MinervaPageIssuesNewTreatment'];
+$wgMinervaShowCategoriesButton['base'] = true;
 wfLoadSkin('MinervaNeue');
 
 wfLoadSkin('Vector');
