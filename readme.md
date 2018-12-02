@@ -9,7 +9,7 @@ development. Based on [wikibase-docker].
 ```bash
 # MediaWiki development dependencies.
 sudo apt install \
-  composer docker-compose php-codesniffer php-xml php7.2-cli phpunit
+  composer docker-compose php-codesniffer php-xml php-mbstring php7.2-cli phpunit
 
 # Obtain a copy of Node.js from https://nodejs.org/.
 
@@ -35,15 +35,16 @@ eof
 
 # Download skins.
 time while read i; do git -C skins clone --recursive "$i"; done << eof
-$repo_base/skins/Vector
 $repo_base/skins/MinervaNeue
+$repo_base/skins/Vector
 eof
 
 # Install PHP dependencies.
-time for i in . extensions/*/ skins/*/; do composer -d"$i" install; done
+time for i in . extensions/*/ skins/*/; do composer -d="$i" install; composer -d="$i" update; done
 
 # Install NPM dependencies.
-time for i in . extensions/*/ skins/*/; do $d npm -C "$i" i; done
+cd .. && . ~/.nvm/nvm.sh && nvm use && cd core &&
+time for i in . extensions/*/ skins/*/; do npm -C "$i" i; done
 
 # Add your LocalSettings.php as LocalSettingsDev.php.
 
@@ -72,10 +73,12 @@ docker rm -v $(docker ps -aq --filter name=boxwiki)
 ## Updating MediaWiki
 
 ```bash
+. ~/.nvm/nvm.sh && nvm use &&
+cd core &&
 time for i in . extensions/*/ skins/*/; do
   git -C "$i" pull
-  composer -d"$i" install
-  composer -d"$i" update
+  composer -d="$i" install
+  composer -d="$i" update
   npm -C "$i" i
 done
 ```
