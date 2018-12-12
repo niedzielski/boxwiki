@@ -27,10 +27,8 @@ $repo_base/extensions/OAuth
 $repo_base/extensions/Popups
 $repo_base/extensions/QuickSurveys
 $repo_base/extensions/RelatedArticles
-$repo_base/extensions/Wikibase
 $repo_base/extensions/WikimediaEvents
 $repo_base/extensions/WikimediaMessages
-https://github.com/filbertkm/WikibaseImport
 eof
 
 # Download skins.
@@ -87,12 +85,6 @@ done
 ```bash
 docker exec -it boxwiki_boxwiki_1 bash
 su stephen
-```
-
-### Import kittens from Wikidata
-```bash
-docker exec -it boxwiki_boxwiki_1 php extensions/WikibaseImport/maintenance/importEntities.php --entity Q147
-docker exec -it boxwiki_boxwiki_1 php maintenance/update.php --quick
 ```
 
 ### Run PHPUnit tests
@@ -172,13 +164,6 @@ $wgMFLazyLoadImages = [ 'base' => true, 'beta' => true ];
 $wgMFNearby = true;
 $wgMFNearbyEndpoint = 'https://en.wikipedia.org/w/api.php';
 $wgMFMwApiContentProviderBaseUri = 'https://en.wikipedia.org/w/api.php';
-$wgMFUseWikibase = true;
-$wgMFDisplayWikibaseDescriptions = [
-  'search' => true,
-  'nearby' => true,
-  'watchlist' => true,
-  'tagline' => true,
-];
 wfLoadExtension('MobileFrontend');
 
 wfLoadExtension('OAuth');
@@ -194,22 +179,6 @@ wfLoadExtension('Popups');
 wfLoadExtension('QuickSurveys');
 
 wfLoadExtension('RelatedArticles');
-
-## Wikibase
-require_once "$IP/extensions/Wikibase/vendor/autoload.php";
-require_once "$IP/extensions/Wikibase/lib/WikibaseLib.php";
-require_once "$IP/extensions/Wikibase/repo/Wikibase.php";
-require_once "$IP/extensions/Wikibase/repo/ExampleSettings.php";
-require_once "$IP/extensions/Wikibase/client/WikibaseClient.php";
-require_once "$IP/extensions/Wikibase/client/ExampleSettings.php";
-$wgEnableWikibaseRepo = true;
-$wgEnableWikibaseClient = true;
-$wgWBClientSettings['pageSchemaNamespaces'] = [0, 6, 120];
-$wgWBClientSettings['pageSchemaSplitTestSamplingRatio'] = .5;
-$wgWBClientSettings['pageSchemaSplitTestBuckets'] = ['control', 'treatment'];
-$wgWBClientSettings['siteGlobalID'] = 'enwiki';
-
-wfLoadExtension('WikibaseImport');
 
 wfLoadExtension('WikimediaEvents');
 $wgWMEReadingDepthEnabled = true;
@@ -230,7 +199,7 @@ wfLoadSkin('Vector');
 
 ## Tested .htaccess
 ```htaccess
-# This file is provided by the wikibase/wikibase docker image.
+# This file is derived from the wikibase/wikibase docker image.
 ## http://www.mediawiki.org/wiki/Manual:Short_URL/Apache
 
 # Enable the rewrite engine
@@ -241,8 +210,4 @@ RewriteRule ^/?wiki(/.*)?$ %{DOCUMENT_ROOT}/w/index.php [L]
 
 # Redirect / to Main Page
 RewriteRule ^/*$ %{DOCUMENT_ROOT}/w/index.php [L]
-
-# rewrite /entity/ URLs like wikidata per
-# https://meta.wikimedia.org/wiki/Wikidata/Notes/URI_scheme
-RewriteRule ^/?entity/(.*)$ /wiki/Special:EntityData/$1 [R=303,QSA]
 ```
