@@ -20,6 +20,7 @@ cd core
 
 # Download extensions.
 time while read i; do git -C extensions clone --recursive "$i"; done << eof
+$repo_base/extensions/Echo
 $repo_base/extensions/EventLogging
 $repo_base/extensions/PageImages
 $repo_base/extensions/MobileFrontend
@@ -74,7 +75,8 @@ docker rm -v $(docker ps -aq --filter name=boxwiki)
 . ~/.nvm/nvm.sh && nvm use &&
 cd core &&
 time for i in . extensions/*/ skins/*/; do
-  git -C "$i" pull
+  git -C "$i" fetch --all
+  git -C "$i" pull || echo -e "\033[0;31m████████████ $i ████████████\033[0m"
   composer -d="$i" install
   composer -d="$i" update
   npm -C "$i" i
@@ -150,6 +152,8 @@ $wgEnableUploads = true;
 
 $wgEnableJavaScriptTest = true;
 
+wfLoadExtension( 'Echo' );
+
 $wgEventLoggingBaseUri = '/event.gif';
 $wgEventLoggingFile = '/var/log/mediawiki/events.log';
 wfLoadExtension('EventLogging');
@@ -157,9 +161,11 @@ wfLoadExtension('EventLogging');
 wfLoadExtension('PageImages');
 
 $wgMFAlwaysUseContentProvider = true;
+$wgMFContentProviderScriptPath = 'https://en.wikipedia.org/w';
 $wgMFContentProviderClass = 'MobileFrontend\ContentProviders\MwApiContentProvider';
 $wgMFEnableBeta = true;
 $wgMFEnableMobilePreferences = true;
+$wgMFAdvancedMobileContributions = true;
 $wgMFLazyLoadImages = [ 'base' => true, 'beta' => true ];
 $wgMFNearby = true;
 $wgMFNearbyEndpoint = 'https://en.wikipedia.org/w/api.php';
@@ -174,11 +180,28 @@ $wgGroupPermissions['sysop']['mwoauthupdateownconsumer'] = true;
 
 $wgPopupsGateway = 'restbaseHTML';
 $wgPopupsRestGatewayEndpoint = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
+$wgPopupsReferencePreviews = true;
+$wgPopupsVirtualPageViews = true;
+$wgPopupsEventLogging = true;
 wfLoadExtension('Popups');
 
 wfLoadExtension('QuickSurveys');
 
 wfLoadExtension('RelatedArticles');
+
+wfLoadExtension( 'VisualEditor' );
+// Enable by default for everybody
+$wgDefaultUserOptions['visualeditor-enable'] = 1;
+$wgVirtualRestConfig['modules']['parsoid'] = array(
+    // URL to the Parsoid instance
+    // Use port 8142 if you use the Debian package
+    'url' => 'https://en.wikipedia.org',
+    // Parsoid "domain", see below (optional)
+    'domain' => 'en.wikipedia.org',
+    // Parsoid "prefix", see below (optional)
+    'prefix' => 'localhost'
+);
+$wgVisualEditorFullRestbaseURL = 'https://en.wikipedia.org/api/rest_';
 
 wfLoadExtension('WikimediaEvents');
 $wgWMEReadingDepthEnabled = true;
@@ -190,8 +213,11 @@ $wgMinervaDownloadIcon = true;
 $wgMinervaApplyKnownTemplateHacks = true;
 $wgMinervaABSamplingRate = 1;
 $wgMinervaErrorLogSamplingRate = 1;
+#$skinOptions = ['MinervaPageIssuesNewTreatment' => true];
 $wgMinervaFeatures = ['MinervaPageIssuesNewTreatment'];
+$wgMinervaShowShareButton = [ 'base' => true, 'beta' => true ];
 $wgMinervaShowCategoriesButton['base'] = true;
+$wgMinervaCountErrors = true;
 wfLoadSkin('MinervaNeue');
 
 wfLoadSkin('Vector');

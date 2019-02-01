@@ -1,26 +1,20 @@
 version: '3'
 
 services:
-  boxwiki:
+  mediawiki:
     build:
       context: .
       dockerfile: Dockerfile
-    links:
-      - mysql
-    ports:
-      - "8181:80"
+    links: [database]
+    ports: ['8181:80']
     volumes:
       - ./core:/var/www/html
       - /etc/group:/etc/group:ro
       - /etc/passwd:/etc/passwd:ro
     depends_on:
-      - mysql
-    networks:
-      default:
-        aliases:
-          - boxwiki.svc
+      - database
     environment:
-      - DB_SERVER=mysql.svc:3306
+      - DB_SERVER=database.svc:3306
       - MW_ADMIN_NAME=admin
       - MW_ADMIN_PASS=adminpass
       - MW_WG_SECRET_KEY=secretkey
@@ -29,17 +23,15 @@ services:
       - DB_NAME=boxwiki
       - MW_SITE_NAME=box
       - MW_SITE_LANG=en
-  mysql:
-    image: mariadb:10.3
-    volumes:
-      - ./mysql:/var/lib/mysql
+  database:
+    image: mariadb
+    volumes: ['./mysql:/var/lib/mysql']
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
-      MYSQL_DATABASE: 'boxwiki'
-      MYSQL_USER: 'wikiuser'
-      MYSQL_PASSWORD: 'sqlpass'
+      MYSQL_DATABASE: boxwiki
+      MYSQL_USER: wikiuser
+      MYSQL_PASSWORD: sqlpass
+      MYSQL_ROOT_PASSWORD: sqlrootpass
     networks:
       default:
         aliases:
-          - mysql.svc
-
+          - database.svc
