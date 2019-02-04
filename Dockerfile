@@ -1,4 +1,4 @@
-FROM mediawiki:1.31.1
+FROM mediawiki
 
 RUN a2enmod rewrite
 
