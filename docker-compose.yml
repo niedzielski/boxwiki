@@ -13,6 +13,10 @@ services:
       - /etc/passwd:/etc/passwd:ro
     depends_on:
       - database
+    networks:
+      default:
+        aliases:
+          - mediawiki.svc
     environment:
       - DB_SERVER=database.svc:3306
       - MW_ADMIN_NAME=admin
@@ -35,3 +39,77 @@ services:
       default:
         aliases:
           - database.svc
+  wdqs-frontend:
+    image: wikibase/wdqs-frontend:latest
+    ports:
+      - "8282:80"
+    depends_on:
+      - wdqs-proxy
+    networks:
+      default:
+        aliases:
+          - wdqs-frontend.svc
+    environment:
+      - WIKIBASE_HOST=mediawiki.svc
+      - WDQS_HOST=wdqs-proxy.svc
+  wdqs:
+    image: wikibase/wdqs:0.3.1
+    volumes:
+      - ./wdqs:/wdqs/data
+    command: /runBlazegraph.sh
+    networks:
+      default:
+        aliases:
+          - wdqs.svc
+    environment:
+      - WIKIBASE_HOST=mediawiki.svc
+      - WDQS_HOST=wdqs.svc
+      - WDQS_PORT=9999
+    expose:
+      - 9999
+  wdqs-proxy:
+    image: wikibase/wdqs-proxy:latest
+    environment:
+      - PROXY_PASS_HOST=wdqs.svc:9999
+    ports:
+      - "8989:80"
+    depends_on:
+      - wdqs
+    networks:
+      default:
+        aliases:
+          - wdqs-proxy.svc
+  wdqs-updater:
+    image: wikibase/wdqs:0.3.1
+    command: /runUpdate.sh
+    depends_on:
+      - wdqs
+      - mediawiki
+    networks:
+      default:
+        aliases:
+          - wdqs-updater.svc
+    environment:
+      - WIKIBASE_HOST=mediawiki.svc
+      - WDQS_HOST=wdqs.svc
+      - WDQS_PORT=9999
+  quickstatements:
+    image: wikibase/quickstatements:latest
+    ports:
+      - "9191:80"
+    depends_on:
+      - mediawiki
+    networks:
+      default:
+        aliases:
+         - quickstatements.svc
+    environment:
+      - OAUTH_CONSUMER_KEY=559fcf1da153c5ec4b2fbefa7c3c395b
+      - OAUTH_CONSUMER_SECRET=57cad33da0015dce1e94a597908e19848714a6af
+      - QS_PUBLIC_SCHEME_HOST_AND_PORT=http://localhost:9191
+      - WB_PUBLIC_SCHEME_HOST_AND_PORT=http://localhost:8181
+      - WIKIBASE_SCHEME_AND_HOST=http://mediawiki.svc
+      - WB_PROPERTY_NAMESPACE=122
+      - "WB_PROPERTY_PREFIX=Property:"
+      - WB_ITEM_NAMESPACE=120
+      - "WB_ITEM_PREFIX=Item:"

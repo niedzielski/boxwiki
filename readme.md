@@ -20,16 +20,30 @@ cd core
 
 # Download extensions.
 time while read i; do git -C extensions clone --recursive "$i"; done << eof
+$repo_base/extensions/BetaFeatures
+$repo_base/extensions/CentralNotice
+$repo_base/extensions/CirrusSearch
+$repo_base/extensions/Cite
+$repo_base/extensions/CiteThisPage
+$repo_base/extensions/Collection
 $repo_base/extensions/Echo
+$repo_base/extensions/ElectronPdfService
 $repo_base/extensions/EventLogging
+$repo_base/extensions/GeoData
 $repo_base/extensions/PageImages
 $repo_base/extensions/MobileFrontend
 $repo_base/extensions/OAuth
+$repo_base/extensions/PageImages
 $repo_base/extensions/Popups
 $repo_base/extensions/QuickSurveys
 $repo_base/extensions/RelatedArticles
+$repo_base/extensions/TextExtracts
+$repo_base/extensions/VisualEditor
+$repo_base/extensions/Wikibase
+$repo_base/extensions/WikibaseMediaInfo
 $repo_base/extensions/WikimediaEvents
 $repo_base/extensions/WikimediaMessages
+https://github.com/filbertkm/WikibaseImport
 eof
 
 # Download skins.
@@ -85,8 +99,14 @@ done
 
 ## Log into the box
 ```bash
-docker exec -it boxwiki_boxwiki_1 bash
+docker exec -it boxwiki_mediawiki_1 bash
 su stephen
+```
+
+### Import kittens from Wikidata
+```bash
+docker exec -it boxwiki_mediawiki_1 php extensions/WikibaseImport/maintenance/importEntities.php --entity Q147
+docker exec -it boxwiki_mediawiki_1 php maintenance/update.php --quick
 ```
 
 ### Run PHPUnit tests
@@ -96,8 +116,13 @@ time php tests/phpunit/phpunit.php --filter PageSplitTesterTest
 
 ### Add an image
 ```bash
-docker exec -it boxwiki_boxwiki_1 php maintenance/importImages.php images
-docker exec -it boxwiki_boxwiki_1 bash -c "php maintenance/edit.php kitten <<< '[[File:Kitten.jpg]]'"
+docker exec -it boxwiki_mediawiki_1 php maintenance/importImages.php images
+docker exec -it boxwiki_mediawiki_1 bash -c "php maintenance/edit.php kitten <<< '[[File:Kitten.jpg]]'"
+```
+
+### Run PHP unit tests
+```bash
+docker exec -it boxwiki_mediawiki_1 php tests/phpunit/phpunit.php --filter TextExtracts
 ```
 
 ## Tested LocalSettingsDev.php
@@ -152,24 +177,61 @@ $wgEnableUploads = true;
 
 $wgEnableJavaScriptTest = true;
 
-wfLoadExtension( 'Echo' );
+wfLoadExtension('BetaFeatures');
+
+wfLoadExtension('CentralNotice');
+$wgNoticeInfrastructure = true;
+$wgNoticeProjects = array('centralnoticeproject'); # 'centralnoticeproject' can be any string
+$wgNoticeProject = 'centralnoticeproject'; # must be the same as above
+$wgCentralHost = 'localhost';
+$wgCentralSelectedBannerDispatcher = 'http://localhost:8181/w/index.php?title=Special:BannerLoader';
+$wgCentralDBname = $wgDBname; # the same as $wgDBname
+$wgCentralNoticeGeoIPBackgroundLookupModule = 'ext.centralNotice.freegeoipLookup';
+
+wfLoadExtension('Cite');
+
+wfLoadExtension('CiteThisPage');
+
+require_once("$IP/extensions/Collection/Collection.php");
+
+wfLoadExtension('Echo');
+
+wfLoadExtension('ElectronPdfService');
+$wgElectronPdfServiceRESTbaseURL = '/api/rest_v1/page/pdf/';
 
 $wgEventLoggingBaseUri = '/event.gif';
 $wgEventLoggingFile = '/var/log/mediawiki/events.log';
 wfLoadExtension('EventLogging');
 
+wfLoadExtension( 'GeoData' );
+
 wfLoadExtension('PageImages');
 
+$wgMFAdvancedMobileContributions = true;
 $wgMFAlwaysUseContentProvider = true;
 $wgMFContentProviderScriptPath = 'https://en.wikipedia.org/w';
 $wgMFContentProviderClass = 'MobileFrontend\ContentProviders\MwApiContentProvider';
 $wgMFEnableBeta = true;
 $wgMFEnableMobilePreferences = true;
-$wgMFAdvancedMobileContributions = true;
 $wgMFLazyLoadImages = [ 'base' => true, 'beta' => true ];
 $wgMFNearby = true;
 $wgMFNearbyEndpoint = 'https://en.wikipedia.org/w/api.php';
 $wgMFMwApiContentProviderBaseUri = 'https://en.wikipedia.org/w/api.php';
+$wgMFUseWikibase = true;
+$wgMFDisplayWikibaseDescriptions = [
+  'search' => true,
+  'nearby' => true,
+  'watchlist' => true,
+  'tagline' => true,
+];
+$wgMFExperiments['betaoptin'] = array(
+  "name" => "betaoptin",
+  'buckets' => [
+    'control' => 0,
+    'A' => 1,
+  ],
+  'enabled' => true,
+);
 wfLoadExtension('MobileFrontend');
 
 wfLoadExtension('OAuth');
@@ -203,6 +265,23 @@ $wgVirtualRestConfig['modules']['parsoid'] = array(
 );
 $wgVisualEditorFullRestbaseURL = 'https://en.wikipedia.org/api/rest_';
 
+
+## Wikibase
+require_once "$IP/extensions/Wikibase/vendor/autoload.php";
+require_once "$IP/extensions/Wikibase/lib/WikibaseLib.php";
+require_once "$IP/extensions/Wikibase/repo/Wikibase.php";
+require_once "$IP/extensions/Wikibase/repo/ExampleSettings.php";
+require_once "$IP/extensions/Wikibase/client/WikibaseClient.php";
+require_once "$IP/extensions/Wikibase/client/ExampleSettings.php";
+$wgEnableWikibaseRepo = true;
+$wgEnableWikibaseClient = true;
+$wgWBClientSettings['pageSchemaNamespaces'] = [0, 6, 120];
+$wgWBClientSettings['pageSchemaSplitTestSamplingRatio'] = .5;
+$wgWBClientSettings['pageSchemaSplitTestBuckets'] = ['control', 'treatment'];
+$wgWBClientSettings['siteGlobalID'] = 'enwiki';
+
+wfLoadExtension('WikibaseImport');
+
 wfLoadExtension('WikimediaEvents');
 $wgWMEReadingDepthEnabled = true;
 $wgWMEReadingDepthSamplingRate = 1;
@@ -231,9 +310,16 @@ wfLoadSkin('Vector');
 # Enable the rewrite engine
 RewriteEngine On
 
+# Link w to /.
+RewriteRule ^/?w(/.*)?$ %{DOCUMENT_ROOT}$1 [L]
+
 # Short url for wiki pages
 RewriteRule ^/?wiki(/.*)?$ %{DOCUMENT_ROOT}/w/index.php [L]
 
 # Redirect / to Main Page
 RewriteRule ^/*$ %{DOCUMENT_ROOT}/w/index.php [L]
+
+# rewrite /entity/ URLs like wikidata per
+# https://meta.wikimedia.org/wiki/Wikidata/Notes/URI_scheme
+RewriteRule ^/?entity/(.*)$ /wiki/Special:EntityData/$1 [R=303,QSA]
 ```
