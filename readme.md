@@ -61,8 +61,6 @@ time for i in . extensions/*/ skins/*/; do npm -C "$i" i; done
 
 # Add your LocalSettings.php as LocalSettingsDev.php.
 
-ln -s . w
-
 # Add your .htaccess file.
 ```
 
@@ -203,7 +201,7 @@ $wgEventLoggingBaseUri = '/event.gif';
 $wgEventLoggingFile = '/var/log/mediawiki/events.log';
 wfLoadExtension('EventLogging');
 
-wfLoadExtension( 'GeoData' );
+wfLoadExtension('GeoData');
 
 wfLoadExtension('PageImages');
 
@@ -251,7 +249,7 @@ wfLoadExtension('QuickSurveys');
 
 wfLoadExtension('RelatedArticles');
 
-wfLoadExtension( 'VisualEditor' );
+wfLoadExtension('VisualEditor');
 // Enable by default for everybody
 $wgDefaultUserOptions['visualeditor-enable'] = 1;
 $wgVirtualRestConfig['modules']['parsoid'] = array(
@@ -264,7 +262,6 @@ $wgVirtualRestConfig['modules']['parsoid'] = array(
     'prefix' => 'localhost'
 );
 $wgVisualEditorFullRestbaseURL = 'https://en.wikipedia.org/api/rest_';
-
 
 ## Wikibase
 require_once "$IP/extensions/Wikibase/vendor/autoload.php";
