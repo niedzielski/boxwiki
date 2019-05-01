@@ -14,7 +14,7 @@ sudo apt install \
 # Obtain a copy of Node.js from https://nodejs.org/.
 
 # Download Core.
-repo_base=https://gerrit.wikimedia.org/r/p/mediawiki
+repo_base=https://gerrit.wikimedia.org/r/mediawiki
 time git clone --recursive "$repo_base/core.git"
 cd core
 
@@ -88,9 +88,9 @@ docker rm -v $(docker ps -aq --filter name=boxwiki)
 cd core &&
 time for i in . extensions/*/ skins/*/; do
   git -C "$i" fetch --all
-  git -C "$i" pull || echo -e "\033[0;31m████████████ $i ████████████\033[0m"
-  composer -d="$i" install
-  composer -d="$i" update
+  { git -C "$i" pull && git -C "$i" submodule update --recursive --init; } || echo -e "\033[0;31m████████████ $i ████████████\033[0m"
+  composer --working-dir="$i" install
+  composer --working-dir="$i" update
   npm -C "$i" i
 done
 ```
