@@ -53,7 +53,7 @@ $repo_base/skins/Vector
 eof
 
 # Install PHP dependencies.
-time for i in . extensions/*/ skins/*/; do composer -d="$i" install; composer -d="$i" update; done
+time for i in . extensions/*/ skins/*/; do composer --working-dir="$i" install; composer --working-dir="$i" update; done
 
 # Install NPM dependencies.
 cd .. && . ~/.nvm/nvm.sh && nvm use && cd core &&
