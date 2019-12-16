@@ -40,7 +40,6 @@ $repo_base/extensions/RelatedArticles
 $repo_base/extensions/TextExtracts
 $repo_base/extensions/VisualEditor
 $repo_base/extensions/Wikibase
-$repo_base/extensions/WikibaseMediaInfo
 $repo_base/extensions/WikimediaEvents
 $repo_base/extensions/WikimediaMessages
 https://github.com/filbertkm/WikibaseImport
