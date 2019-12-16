@@ -1,7 +1,8 @@
 <?php
 
-// error_reporting( -1 );
-// ini_set( 'display_errors', 1 );
+error_reporting( -1 );
+ini_set( 'display_startup_errors', 1 );
+ini_set( 'display_errors', 1 );
 
 # Protect against web entry
 if (!defined('MEDIAWIKI')) {
@@ -35,14 +36,15 @@ $wgSecretKey = getenv('MW_WG_SECRET_KEY');
 # Set this to 1 year to avoid any changes being removed from the RC table over a shorter period of time.
 $wgRCMaxAge = 365 * 24 * 3600;
 
-## Logs
-$wgDebugLogGroups = array(
-  'resourceloader' => '/var/www/html/logs/resourceloader.log',
-  'exception' => '/var/www/html/logs/exception.log',
-  'error' => '/var/www/html/logs/error.log'
-);
-$wgDebugLogFile = "/var/www/html/logs/debug.log";
-// $wgDebugComments = true;
+## Logs (files must have write permissions and are written to by `wfDebugLog( 'dev', json_encode( $prefs['skin'] ) );`).
+$wgDebugLogGroups = [
+  'dev' => $IP . '/logs/dev.log',
+  'resourceloader' => $IP . '/logs/resourceloader.log',
+  'exception' => $IP . '/logs/exception.log',
+  'error' => $IP . '/logs/error.log'
+];
+$wgDebugLogFile = $IP . '/debug.log';
+$wgDebugComments = true;
 $wgDebugToolbar = true;
 // $wgShowDebug = true;
 $wgDevelopmentWarnings = true;
@@ -190,6 +192,8 @@ $wgMinervaCountErrors = true;
 wfLoadSkin('MinervaNeue');
 
 wfLoadExtension( 'SandboxLink' );
+
+wfLoadExtension( 'SiteMatrix' );
 
 wfLoadExtension('TextExtracts');
 
